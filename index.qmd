@@ -1,13 +1,13 @@
 ---
-title: "Reconstruction de l'interface utilisateur de FlightRadar24"
-lang: fr-FR
+title: "Project 1"
+lang: en-US
 author: 
-- name: Olivier Meslin
-  email: olivier.meslin@insee.fr
+- name: Daffy Duck
+  email: daffy.duck@insee.fr
   affiliations: 
       - name: "[Insee](https://www.insee.fr/fr/accueil)"
-- name: Tom Seimandi
-  email: tom.seimandi@insee.fr
+- name: Mickey Mouse
+  email: mickey.mouse@insee.fr
   affiliations: 
       - name: "[Insee](https://www.insee.fr/fr/accueil)"
 format:

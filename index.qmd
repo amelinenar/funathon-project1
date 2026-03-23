@@ -98,7 +98,8 @@ In the service, open a terminal by clicking on {{< fa brands fa-bars >}}, then `
 Clone the project repository with the following command after replacing `OWNER_NAME` with your name on Github from the previous step: 
 
 ```{bash}
-git clone https://$GIT_PERSONAL_ACCESS_TOKEN@github.com/OWNER_NAME/funathon-project1.git
+OWNER_NAME="AIML4OS"  # Change your Github name here
+git clone https://$GIT_PERSONAL_ACCESS_TOKEN@github.com/$OWNER_NAME/funathon-project1.git  # do not change this line
 ```
 
 The project has the following structure :
@@ -114,6 +115,7 @@ The project has the following structure :
 Install the project dependencies by running the following command in the terminal:
 
 ```{bash}
+cd funathon-project1
 uv sync
 ```
 

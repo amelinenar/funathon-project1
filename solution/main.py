@@ -5,42 +5,20 @@
 #   - One-hot encoding
 # ============================================
 import pandas as pd
-import duckdb
 from sklearn.model_selection import train_test_split
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder, FunctionTransformer
 from sklearn.preprocessing import OneHotEncoder, FunctionTransformer
 from sklearn.compose import ColumnTransformer, TransformedTargetRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
-
-# Create a non-persistent connection (the database exists only while the connection is alive and disappears when it is closed)
-con = duckdb.connect(database=":memory:")
-
-# You need to create a secret table with all the S3 credentials
-con.execute(
-    f"""
-CREATE SECRET secret_s3 (
-    TYPE S3,
-    KEY_ID '{os.environ["AWS_ACCESS_KEY_ID"]}',
-    SECRET '{os.environ["AWS_SECRET_ACCESS_KEY"]}',
-    ENDPOINT '{os.environ["AWS_S3_ENDPOINT"]}',
-    SESSION_TOKEN '{os.environ["AWS_SESSION_TOKEN"]}',
-    REGION 'us-east-1',
-    URL_STYLE 'path',
-    SCOPE 's3://confpns/synthetic-transactions/'
-);
-"""
-)
-
-# We load all transactions made in France between 2010 and 2022
-trans = con.sql(
-    f"""
-        SELECT * FROM read_parquet('s3://confpns/synthetic-transactions/rawdata/transactions/transactions_houses_final.parquet')
-        UNION ALL
-        SELECT * FROM read_parquet('s3://confpns/synthetic-transactions/rawdata/transactions/transactions_flats_final.parquet')
-    """).to_df()
+import polars as pl
+trans = pl.concat(
+    [
+        pl.read_parquet('s3://confpns/synthetic-transactions/rawdata/transactions/transactions_houses_final.parquet'),
+        pl.read_parquet('s3://confpns/synthetic-transactions/rawdata/transactions/transactions_flats_final.parquet')
+    ]
+    ).to_pandas()
 
 # Filtering to keep rows in Ile de France / Paris region
 trans = trans[trans["ccodep"].isin(["75", "77", "78", "91", "92", "93", "94", "95"])]
@@ -96,9 +74,6 @@ df['jannath_10'] = df['jannath_10'].where(df['jannath_10'] >= 1850, 1840)
 df = df.drop(columns=["jannath"])
 
 
-# Selection of integer columns
-numeric_cols = X.select_dtypes(include="integer").columns.to_list()
-
 def date_to_days(X: pd.Series, ref_date:pd.Timestamp):
     # converts a date to a difference to ref_date : 
     diff_dt = pd.to_datetime(X) - ref_date
@@ -128,6 +103,8 @@ preprocessor = ColumnTransformer(
 # STEP 3 — Train / test split, model fitting,
 #          and performance evaluation
 # ============================================
+
+RANDOM_STATE = 202605
 
 def log_transform(y):
     return np.log10(y)

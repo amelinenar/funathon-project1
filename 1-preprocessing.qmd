@@ -655,7 +655,7 @@ rf_params = {
 
 rf_pipeline = Pipeline([
     ('preprocessing', preprocessor),
-    ('random_forests', RandomForestRegressor(**rf_params))
+    ('RF', RandomForestRegressor(**rf_params))
 ])
 
 model = TransformedTargetRegressor(
@@ -669,11 +669,12 @@ model = TransformedTargetRegressor(
 Congrats ! You have completed the data preparation exercises. Now you can choose one of the two model you'll want to train - or do both ! 💪
 
 ::: {.callout-tip}
-Scikit-learn allows you to access every step defined in the `rf_pipeline` (preprocessing or random_forests). Indeed, once fitted, all the output values are stored in the dictionnary `rf_pipeline`. 
+Scikit-learn allows you to access every step defined in the `rf_pipeline` (preprocessing or RF).  
 
 ```python
 rf_pipeline["preprocessing"]   # access to the first step
-rf_pipeline["random_forests"]   # access to the second step
+rf_pipeline["RF"]   # access to the second step
 ```
 
+For more details, go to [the documentation](https://scikit-learn.org/stable/modules/compose.html#access-pipeline-steps).
 :::

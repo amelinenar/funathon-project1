@@ -144,7 +144,7 @@ We use the same `X_train`, `X_test`, `y_train`, `y_test` splits defined in the p
 ### Step 1 — Jointly optimise the number of trees and the learning rate
 
 
-0.  For convenience, we dropped the features `dteloc`, `dtemut` and trained our model on absolute prices and not on the transformed ones. Get them back and define the new training and testing datasets `X_train, X_test, y_train, y_test`. Update the definition of our Pipeline with a Gradient Boosting model. 
+0.  For convenience, we dropped the features `dteloc`, `dtemut` and trained our model on absolute prices and not on the transformed ones. Get them back and define the new training and testing datasets `X_train, X_test, y_train, y_test`. Update the definition of our Pipeline with a Gradient Boosting model with random state and early stopping. 
 
 ```{python}
 #| code-fold: true
@@ -165,7 +165,9 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 gb_pipeline = Pipeline([
     ('preprocessing', preprocessor),
-    ('GB', HistGradientBoostingRegressor(random_state=RANDOM_STATE))
+    ('GB', HistGradientBoostingRegressor(
+        random_state=RANDOM_STATE, 
+        early_stopping=True))
 ])
 
 model = TransformedTargetRegressor(
@@ -175,7 +177,7 @@ model = TransformedTargetRegressor(
 
 ```
 
-1.  Define the parameter grid for `max_iter` and `learning_rate`, then run a `GridSearchCV` with 4 folds, `scoring="r2"` and `return_train_score=True`. Use `n_jobs=-1` to parallelise the search.
+1.  Define the parameter grid for `max_iter` and `learning_rate`, then run a `GridSearchCV` with 4 folds, `scoring="r2"` and `return_train_score=True`. Use `n_jobs=-1` to parallelise the search. The grid search can take some time to compute (for example, about 40 minutes for 36 iterations) so don't choose max_iter above 1000 and more than 2 and 2 sets of values. 
 
     ::: {.callout-tip collapse="true" title="Click to view a hint"}
     When using `GridSearchCV`, the parameter names must match those of the estimator passed to it. Here we pass a `HistGradientBoostingRegressor` directly, so names are simply `max_iter` and `learning_rate`.
@@ -190,7 +192,7 @@ model = TransformedTargetRegressor(
 #| eval: false
 
 param_grid_step1 = {
-    "regressor__GB__max_iter"     : [200, 500, 1000],
+    "regressor__GB__max_iter": [200, 500],
     "regressor__GB__learning_rate": [0.1, 0.15, 0.2],
 }
 
@@ -217,15 +219,15 @@ print(f"Best CV R²  : {gs_step1.best_score_:.4f}")
 #| code-overflow: scroll
 #| eval: false
 df_step1 = pd.DataFrame(gs_step1.cv_results_)[[
-    "param_max_iter",
-    "param_learning_rate",
+    "param_regressor__GB__max_iter",
+    "param_regressor__GB__learning_rate",
     "mean_train_score",
-    "mean_test_score",
+    "mean_test_score"
 ]].rename(columns={
-    "param_max_iter"      : "max_iter",
-    "param_learning_rate" : "learning_rate",
-    "mean_train_score"    : "train_r2",
-    "mean_test_score"     : "val_r2",
+    "param_regressor__GB__max_iter" : "max_iter",
+    "param_regressor__GB__learning_rate" : "learning_rate",
+    "mean_train_score" : "train_r2",
+    "mean_test_score" : "val_r2"
 })
 
 print(df_step1.sort_values("val_r2", ascending=False).to_string(index=False))
@@ -235,7 +237,7 @@ print(df_step1.sort_values("val_r2", ascending=False).to_string(index=False))
 In scikit-learn's `GridSearchCV`, the column `mean_test_score` refers to the **cross-validation score** computed on the held-out fold at each split — **not** to a score on `X_test`. The naming can be confusing: "test" here means "not used for training this fold". To avoid ambiguity we rename this column `val_r2` in the results DataFrame.
 :::
 
-3.  Plot the mean train and validation R² as a function of `max_iter`, with one line per `learning_rate`. What do you observe about the interplay between the two hyperparameters?
+3.  Plot the mean train and validation R² on a single plot, with one line per `learning_rate`. What do you observe about the interplay between the two hyperparameters? What value for the learning rate and the number of tree do you chose, taking into consideration computation efficiency ? 
 
 ```{python}
 #| code-fold: true
@@ -244,23 +246,20 @@ In scikit-learn's `GridSearchCV`, the column `mean_test_score` refers to the **c
 #| eval: false
 import matplotlib.pyplot as plt
 
-learning_rates = param_grid_step1["learning_rate"]
+learning_rates = param_grid_step1["regressor__GB__learning_rate"]
 
-fig, axes = plt.subplots(1, 2, figsize=(13, 4), sharey=True)
+fig, ax = plt.subplots(figsize=(13, 4))
 
 for lr in learning_rates:
     subset = df_step1[df_step1["learning_rate"] == lr].sort_values("max_iter")
-    axes[0].plot(subset["max_iter"], subset["train_r2"], marker="o", label=f"lr={lr}")
-    axes[1].plot(subset["max_iter"], subset["val_r2"],   marker="o", label=f"lr={lr}")
+    line, = ax.plot(subset["max_iter"], subset["train_r2"], linestyle="--", marker="o", label=f"Train lr={lr}")
+    ax.plot(subset["max_iter"], subset["val_r2"], marker="x", color=line.get_color(), label=f"Val lr={lr}")
 
-for ax, title in zip(axes, ["Mean Train R² (CV)", "Mean Validation R² (CV)"]):
-    ax.set_xlabel("max_iter (number of trees)")
-    ax.set_ylabel("R²")
-    ax.set_title(title)
-    ax.legend(title="learning_rate", fontsize=8)
-    ax.grid(True, linestyle=":")
-
-fig.suptitle("Step 1 — Joint optimisation of max_iter and learning_rate", fontsize=12)
+ax.set_xlabel("max_iter (number of trees)")
+ax.set_ylabel("R²")
+ax.set_title("Step 1 — Joint optimisation of max_iter and learning_rate")
+ax.legend(fontsize=8)
+ax.grid(True, linestyle=":")
 plt.tight_layout()
 plt.show()
 ```
@@ -272,13 +271,13 @@ plt.show()
 #| code-summary: See the solution
 #| code-overflow: scroll
 #| eval: false
-BEST_ITER = gs_step1.best_params_["max_iter"]
-BEST_LR   = gs_step1.best_params_["learning_rate"]
+BEST_ITER = 500  # to automatically catch the best hyperparameter, set to : gs_step1.best_params_["regressor__GB__max_iter"]
+BEST_LR   = 0.2 # to automatically catch the best hyperparameter, set to :  gs_step1.best_params_["regressor__GB__learning_rate"]
 ```
 
 ### Step 2 — Jointly optimise the tree structure
 
-4.  Fix `max_iter` and `learning_rate` to the best values found in step 1, then run a second `GridSearchCV` over `max_depth` and `min_samples_leaf`. Keep the same `cv`, `scoring` and `return_train_score` settings.
+4.  Fix `max_iter` and `learning_rate` to the best values found in step 1, then run a second `GridSearchCV` over `max_depth` and `min_samples_leaf` with other settings unchanged.
 
 ```{python}
 #| code-fold: true
@@ -286,16 +285,27 @@ BEST_LR   = gs_step1.best_params_["learning_rate"]
 #| code-overflow: scroll
 #| eval: false
 param_grid_step2 = {
-    "max_depth"       : [3, 5, 8, None],  # None = no depth limit
-    "min_samples_leaf": [10, 20, 50],
+    "regressor__GB__max_depth" : [3, 5, 8],
+    "regressor__GB__min_samples_leaf": [10, 20, 50],
 }
 
-gs_step2 = GridSearchCV(
-    estimator=HistGradientBoostingRegressor(
+gb_pipeline_step2 = Pipeline([
+    ('preprocessing', preprocessor),
+    ('GB', HistGradientBoostingRegressor(
         max_iter=BEST_ITER,
         learning_rate=BEST_LR,
         random_state=RANDOM_STATE,
-    ),
+        early_stopping=True
+    ))
+])
+
+model_step2 = TransformedTargetRegressor(
+    regressor=gb_pipeline_step2,
+    transformer=y_transformer
+)
+
+gs_step2 = GridSearchCV(
+    estimator=model_step2,
     param_grid=param_grid_step2,
     cv=4,
     scoring="r2",
@@ -303,6 +313,7 @@ gs_step2 = GridSearchCV(
     n_jobs=-1,
     verbose=1,
 )
+
 gs_step2.fit(X_train, y_train)
 
 print("Best params :", gs_step2.best_params_)
@@ -319,21 +330,17 @@ print(f"Best CV R²  : {gs_step2.best_score_:.4f}")
 import numpy as np
 
 df_step2 = pd.DataFrame(gs_step2.cv_results_)[[
-    "param_max_depth",
-    "param_min_samples_leaf",
+    "param_regressor__GB__max_depth",
+    "param_regressor__GB__min_samples_leaf",
     "mean_train_score",
     "mean_test_score",
 ]].rename(columns={
-    "param_max_depth"        : "max_depth",
-    "param_min_samples_leaf" : "min_samples_leaf",
-    "mean_train_score"       : "train_r2",
-    "mean_test_score"        : "val_r2",
+    "param_regressor__GB__max_depth" : "max_depth",
+    "param_regressor__GB__min_samples_leaf" : "min_samples_leaf",
+    "mean_train_score" : "train_r2",
+    "mean_test_score" : "val_r2",
 })
 
-# Replace None with the string "None" for display
-df_step2["max_depth"] = df_step2["max_depth"].apply(
-    lambda x: "None" if x is None else x
-)
 
 depth_labels = df_step2["max_depth"].unique()
 

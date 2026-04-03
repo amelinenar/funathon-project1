@@ -54,7 +54,7 @@ To allow for comparison with the random forest section, we chose to use the same
 #| code-overflow: scroll
 #| eval: false
 from sklearn.ensemble import HistGradientBoostingRegressor
-X = df.drop(columns=["valfonc_m2", "datemut", "dteloc"])  
+X = df.drop(columns=["valfonc_m2", "datemut", "dteloc"]) 
 y = df["valfonc_m2"]
 X_train, X_test, y_train, y_test = train_test_split(
     X, y,
@@ -80,8 +80,8 @@ import numpy as np
 for split, X, y in [("Train", X_train, y_train), ("Test", X_test, y_test)]:
     y_pred = gb_baseline.predict(X)
     rmse = np.sqrt(mean_squared_error(y, y_pred))
-    mae  = mean_absolute_error(y, y_pred)
-    r2   = r2_score(y, y_pred)
+    mae = mean_absolute_error(y, y_pred)
+    r2  = r2_score(y, y_pred)
     print(f"{split} — RMSE: {rmse:.2f}  |  MAE: {mae:.2f}  |  R²: {r2:.4f}")
 ```
 
@@ -153,8 +153,8 @@ We use the same `X_train`, `X_test`, `y_train`, `y_test` splits defined in the p
 #| eval: false
 
 # Split features / target
-X = df.drop(columns="valfonc_m2")  
-y = df["valfonc_m2"]  
+X = df.drop(columns="valfonc_m2")
+y = df["valfonc_m2"]
 
 # Split train / test set
 X_train, X_test, y_train, y_test = train_test_split(
@@ -207,8 +207,8 @@ gs_step1 = GridSearchCV(
 )
 gs_step1.fit(X_train, y_train)
 
-print("Best params :", gs_step1.best_params_)
-print(f"Best CV R²  : {gs_step1.best_score_:.4f}")
+print(f"Best params : {gs_step1.best_params_}")
+print(f"Best CV R² : {gs_step1.best_score_:.4f}")
 ```
 
 2.  Retrieve the cross-validation results as a DataFrame and display the mean train and validation R² for each combination, sorted by descending validation R².
@@ -223,7 +223,7 @@ def results_to_df(results_: dict):
     pattern = "param_regressor__GB__"
     pattern_len=len(pattern)
     params = [key for key in results_.keys() if key.startswith(pattern)]
-    matching_keys =  params + ["mean_train_score", "mean_test_score"]
+    matching_keys = params + ["mean_train_score", "mean_test_score"]
     rename_params = {key: key[pattern_len:] for key in params}
     rename_params["mean_train_score"] = "train_r2"
     rename_params["mean_test_score"] = "val_r2"
@@ -279,7 +279,7 @@ plot_results_cv("max_iter", df_step1)
 #| code-overflow: scroll
 #| eval: false
 BEST_ITER = 500  # to automatically catch the best hyperparameter, set to : gs_step1.best_params_["regressor__GB__max_iter"]
-BEST_LR   = 0.2 # to automatically catch the best hyperparameter, set to :  gs_step1.best_params_["regressor__GB__learning_rate"]
+BEST_LR = 0.2  # to automatically catch the best hyperparameter, set to : gs_step1.best_params_["regressor__GB__learning_rate"]
 ```
 
 ### Step 2 — Jointly optimise the tree structure
@@ -323,8 +323,8 @@ gs_step2 = GridSearchCV(
 
 gs_step2.fit(X_train, y_train)
 
-print("Best params :", gs_step2.best_params_)
-print(f"Best CV R²  : {gs_step2.best_score_:.4f}")
+print(f"Best params : {gs_step2.best_params_}")
+print(f"Best CV R² : {gs_step2.best_score_:.4f}")
 ```
 
 5.  Retrieve the cross-validation results as a DataFrame and plot the mean train and validation R² for each combination. Use one subplot per `max_depth` value, with `min_samples_leaf` on the x-axis. Which combinations show signs of overfitting?
@@ -340,7 +340,7 @@ df_step2 = results_to_df(gs_step2.cv_results_)
 
 plot_results_cv("min_samples_leaf", df_step2)
 
-BEST_DEPTH    = gs_step2.best_params_["regressor__GB__max_depth"]
+BEST_DEPTH = gs_step2.best_params_["regressor__GB__max_depth"]
 BEST_MIN_LEAF = gs_step2.best_params_["regressor__GB__min_samples_leaf"]
 ```
 
@@ -392,10 +392,10 @@ df_step3 = results_to_df(gs_step3.cv_results_)
 plot_results_cv("l2_regularization", df_step3)
 
 print("Best params :", gs_step3.best_params_)
-print(f"Best CV R²  : {gs_step3.best_score_:.4f}")
+print(f"Best CV R² : {gs_step3.best_score_:.4f}")
 
 
-BEST_L2  = gs_step3.best_params_["regressor__GB__l2_regularization"]
+BEST_L2 = gs_step3.best_params_["regressor__GB__l2_regularization"]
 
 ```
 
@@ -421,7 +421,7 @@ gb_final = HistGradientBoostingRegressor(
     random_state=RANDOM_STATE,
 )
 
-X = df.drop(columns=["valfonc_m2"])  
+X = df.drop(columns=["valfonc_m2"])
 y = df["valfonc_m2"] 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y,
@@ -464,8 +464,8 @@ import numpy as np
 for split, X, y in [("Train", X_train, y_train), ("Test", X_test, y_test)]:
     y_pred = gb_model_final.predict(X)
     rmse = np.sqrt(mean_squared_error(y, y_pred))
-    mae  = mean_absolute_error(y, y_pred)
-    r2   = r2_score(y, y_pred)
+    mae = mean_absolute_error(y, y_pred)
+    r2 = r2_score(y, y_pred)
     print(f"{split} — RMSE: {rmse:.2f}  |  MAE: {mae:.2f}  |  R²: {r2:.4f}")
 ```
 
@@ -512,7 +512,7 @@ for name, model in [("Random Forest", rf_best), ("Gradient Boosting", gb_model)]
     results[name] = {
         "RMSE": np.sqrt(mean_squared_error(y_test, y_pred)),
         "MAE" : mean_absolute_error(y_test, y_pred),
-        "R²"  : r2_score(y_test, y_pred),
+        "R²" : r2_score(y_test, y_pred),
     }
 
 summary = pd.DataFrame(results).T

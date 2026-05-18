@@ -32,8 +32,12 @@ For more information, you can read the paragraph on RF hyperparameters [here](ht
 
 
 
-::: {.callout-note title="Fall back code"}
-In case you start from here, here is the parameters you need from past sections : 
+::: {.callout-important title="Fall back code"}
+
+<div style="display:flex;align-items:center;gap:0.4em;margin-bottom:0.8em;">
+<img src="../img/CheckpointSM3DL.webp" style="max-height:4em;width:auto;flex-shrink:0;"/>
+<div style="flex:1;margin:0;">In case you start from here, here is the parameters you need from past sections :</div>
+</div>
 
 
 ```{python}

@@ -134,7 +134,9 @@ git clone https://$GIT_PERSONAL_ACCESS_TOKEN@github.com/$OWNER_NAME/funathon-pro
 
 The project has the following structure :
 
--   The `.qmd` files and the `_quarto.yaml` file are necessary to build the website;
+![Project organization](../img/orga.png)
+
+-   The subject, with .qmd files, are available in the `subject` folder;
 -   The file `pyproject.toml` describes the dependencies of the project (using uv);
 -   The starting point is available in the `starting_point` folder;
 -   Intermediate solutions to the exercices are available in the `intermediate_solutions` folder;

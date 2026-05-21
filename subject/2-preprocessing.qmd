@@ -69,7 +69,7 @@ trans = con.sql(
 ```
 
 ::: {.callout-note title="Another way to load the data"}
-DuckDB is not the only tool you can use to read from the data. You can also use pandas' built-in `read_parquet` function for example.
+DuckDB is not the only tool you can use to read the data. You can also use pandas' built-in `read_parquet` function for example.
 
 ``` python
 #| code-fold: true
@@ -106,7 +106,7 @@ df.notnull().all() # column with no NaN?
 
 ::: {.callout-tip collapse="true" title="Hint"}
 
-You need to filter with the feature `prop_loc_dep`, with the following department codes for Paris area : ["75", "77", "78", "91", "92", "93", "94", "95"]
+You need to filter with the feature `prop_loc_dep`, with the following department codes for Paris area : ['75', '77', '78', '91', '92', '93', '94', '95']
 
 :::
 
@@ -120,7 +120,7 @@ trans = trans[trans["prop_loc_dep"].isin(["75", "77", "78", "91", "92", "93", "9
 ```
 
 
-# Which transformations must you apply to the data ?
+# What transformations should be applied to the data ?
 
 ## Exercice 2: Analyzing data inputs
 
@@ -130,11 +130,11 @@ We will transform a few features for the training part. It will enhance the qual
 
 1.  **Create the final target**
 
-    You need to consider what the target prediction should be. In the case of housing prices, should it be the total property price or the price per square meter? In the project, the target is **normalized** to represent the **price per square meter**, for the following reasons :
+    The first question to ask is: what should the prediction target be? In the case of housing prices, it can be the total property price or the price per square meter. In the project, the target is **normalized** to represent the **price per square meter**, for the following reasons :
 
-    -   all observations have the same importance with this target : predicting price per square meter prevents size from monopolizing the variance-reduction criterion at each split, freeing the tree to capture more informative features ;
-    -   when size is no longer the dominant source of variance in the target, splits are driven by economivally meaningful features rather than a mechanical size effect ;
-    -   Feature importance scores are less distorted when size no longer absorbs a disproportionate share of variance reduction across splits ;
+    -   floor area is obviously very important when predicting housing prices, and prices are approximately proportional to floor area (all other things being equal). Using prices per square meter instead of prices will help the models to focus on other informative features ;
+    -   when size is no longer the dominant source of variance in the target, splits are driven by economically meaningful features rather than a mechanical size effect ;
+    -   Feature importance scores are less distorted when size no longer absorbs a disproportionate share of variance reduction across splits.
 
     ::: {.callout-tip collapse="true" title="Hint"}
 
@@ -150,17 +150,25 @@ We will transform a few features for the training part. It will enhance the qual
     trans["price_sqm"] = trans["price"] / trans["farea"]
     ```
 
-2.  **Check if the target must be transformed by plots**
+2.  **Check if the target must be transformed**
 
-    For better prediction quality, you need to have a look at the distribution of your target variable and check whether it is symmetric. If the distribution is not symmetric, the prediction may be less accurate for certain range of values :
+    For better prediction quality, you need to have a look at the distribution of your target variable and check whether it is roughly normal and approximately symmetric. If the distribution is not roughly normal or if it has a lot of extreme values, the prediction may be less accurate for certain ranges of values, and some extreme values will have too much influence on the final model.
 
-    -   lower values when the distribution is right-skewed ;
-    -   higher values when the distribution is left-skewed ;
+::: {.callout-note title="Another way to load the data"}
 
-    The reason differs depending on the model used :
+    The reason why extreme values are detrimental to model quality differs depending on the model used :
 
     -   For Random Forest (random forests), the final prediction is the mean value of Y across all observations contained in the leaf. Since the mean is not a robust statistic, extreme values can strongly influence the final prediction associated with that leaf.
     -   For Gradient Boosting (gradient boosting), extreme values can lead to overfitting. Since gradient boosting iteratively reduces residuals by adding new trees, observations with very large residuals - often caused by extreme values - can have a disproportionate influence on the model.
+:::
+
+    The best way to look at the distribution of the target is to plot it. So: plot the price per square meter and the logarithm of price per square meter. If you want, you can remove extreme values before plotting. Look at the plots, and answer this question: what distribution looks closer to the normal one? Is it necessary to transform `y`?
+ 
+::: {.callout-tip collapse="true" title="Hint"}
+
+You can use `matplotlib` to make the plots, and the `percentile` function of `numpy` to define thresholds for oulier removal.
+
+:::
 
     ```{python}
     #| code-fold: true
@@ -185,11 +193,7 @@ We will transform a few features for the training part. It will enhance the qual
     plt.show()
     ```
 
-    In this case, you can see the difference between `Y` and `log(Y)` distribution : it is more symmetric with `log(Y)` distribution.
-
-    Moreover, prices distribution is usually right skewed as they are more often positive, and **prices usually present extreme values that logarithm will soften**.
-
-    We will therefore apply a log transformation to the target variable when constructing the train pipeline.
+    In this case, you can see the difference between `Y` and `log(Y)` distribution : it is much closer to normal with the log transformation. Moreover, prices distribution is usually right skewed as they are more often positive, and **prices usually present extreme values that logarithm will soften**. We will therefore apply a log transformation to the target variable when constructing the training pipeline.
 
 3.  **Handle outlier or erroneous values in the target variable**
 

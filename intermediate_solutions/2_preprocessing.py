@@ -21,6 +21,18 @@ trans = con.sql(
 
 
 # %%
+
+trans.shape # (nb_rows, nb_columns)
+trans.dtypes # type of each columns
+trans.columns # list of columns
+trans.index # index
+trans.info() # full summary: types + non-null values + memory
+trans.describe() # statistics (count, mean, std, min, max, quartiles)
+trans.head(n=5) # first n rows
+trans.isnull().sum() # nb of NaN per column
+trans.notnull().all() # column with no NaN?
+
+# %%
 import pandas as pd
 
 trans = trans[trans["prop_loc_dep"].isin(["75", "77", "78", "91", "92", "93", "94", "95"])]

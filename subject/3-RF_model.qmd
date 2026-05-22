@@ -137,8 +137,8 @@ X_test  = pd.read_parquet("https://minio.lab.sspcloud.fr/projet-funathon/2026/pr
 X_train = X_train.drop(columns=["prop_type", "trans_date"])
 X_test  =  X_test.drop(columns=["prop_type", "trans_date"])
 
-y_train = pd.read_parquet('s3://projet-funathon/2026/project1/data/2_preprocessing/y_train.parquet')["price_sqm"]
-y_test  = pd.read_parquet('s3://projet-funathon/2026/project1/data/2_preprocessing/y_test.parquet')["price_sqm"]
+y_train = pd.read_parquet('https://minio.lab.sspcloud.fr/projet-funathon/2026/project1/data/2_preprocessing/y_train.parquet')["price_sqm"]
+y_test  = pd.read_parquet('https://minio.lab.sspcloud.fr/projet-funathon/2026/project1/data/2_preprocessing/y_test.parquet')["price_sqm"]
 ```
 
 

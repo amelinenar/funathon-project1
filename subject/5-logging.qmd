@@ -81,7 +81,7 @@ Use `mlflow.set_tags()` with a dictionary. Tags are free-form strings and are us
     mlflow.set_tags({
         "model_type": "RandomForestRegressor",
         "task": "regression",
-        "data_path": "s3://...",
+        "data_path": "https://minio.lab.sspcloud.fr/...",
         "target_col": y.name,
         "framework": "scikit-learn"
     })

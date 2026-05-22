@@ -20,7 +20,7 @@ To have a better understanding of what we will do, here is an overview of the pr
 ::: {.callout-note appearance="simple"}
 ## Watch out
 
-All data inputs are available on the following S3 bucket : `s3://projet-funathon/2026/project1/data/`
+All data inputs are available on the following  url : `https://minio.lab.sspcloud.fr/projet-funathon/`
 
 You have to load the file `2026/project1/data/1_input/transactions_EN.parquet` for transactions.
 
@@ -84,11 +84,11 @@ trans = pd.read_parquet("https://minio.lab.sspcloud.fr/projet-funathon/2026/proj
 
 :::
 
-3.  **Search some information about `trans` dataframe**
+3.  **Search some information about `trans` dataframe : numbre of rows, columns, the types of your data, where they have null values, have a look at their distribution. **
 
     It is important to know the quality of your data and the definition of the columns when you train a ML model *(missings values, types of columns for exemple).* Details about the dataset, including a dictionnary of variables, is available [here](introduction.qmd).
 
-``` python
+```{python}
 #| code-fold: true
 #| code-summary: See the solution
 #| code-overflow: scroll
@@ -101,8 +101,8 @@ trans.index # index
 trans.info() # full summary: types + non-null values + memory
 trans.describe() # statistics (count, mean, std, min, max, quartiles)
 trans.head(n=5) # first n rows
-df.isnull().sum() # nb of NaN per column
-df.notnull().all() # column with no NaN?
+trans.isnull().sum() # nb of NaN per column
+trans.notnull().all() # column with no NaN?
 ```
 
 4.  **Filter the dataframe to keep only housing transactions made inside the Paris area (the region called *Île de France*)**

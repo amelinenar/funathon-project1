@@ -52,7 +52,7 @@ y_train = pd.read_parquet("https://minio.lab.sspcloud.fr/projet-funathon/2026/pr
 y_test  = pd.read_parquet("https://minio.lab.sspcloud.fr/projet-funathon/2026/project1/data/2_preprocessing/y_test.parquet")["price_sqm"]
 
 
-# Importing fine-tuned RF and GB models
+# Importing RF and GB models
 # RF
 url = "https://minio.lab.sspcloud.fr/projet-funathon/2026/project1/models/rf_model_final.joblib"
 rf_model_final = load(io.BytesIO(requests.get(url).content))

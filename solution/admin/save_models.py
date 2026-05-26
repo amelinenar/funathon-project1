@@ -1,5 +1,7 @@
 # %% 
-# Run it from bash with uv run solution/admin/save_models.py intermediate_solutions/3_RF.py rf_model_final rf_model.joblib
+# Run it from bash with
+# uv run solution/admin/save_models.py intermediate_solutions/3_RF.py rf_model_final rf_model_final.joblib
+# uv run solution/admin/save_models.py intermediate_solutions/3_GB.py gb_model_final gb_model_final.joblib
 import sys
 import os
 

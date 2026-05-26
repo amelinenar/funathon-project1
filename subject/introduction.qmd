@@ -92,6 +92,8 @@ It is therefore completely normal if your results differ from those displayed.
 
 -   You also need to have a Github account. Your Github credentials (username, email and token) should be registered in your [Insee's Onyxia](https://datalab.sspcloud.fr/) account in the My account/Git tab.
 
+If you haven't attended one of the onboarding session, **the steps to create a Github account, fork a repo, create a Github token and store it on the SSPCloud** are detailled in the [recording of the onboarding here](https://aiml4os.github.io/funathon-general-website/onboarding.html) from the minute 27. 
+
 ## Initialize your MLFlow service
 
 If you have already opened a MLFlow service, you can skip this step. 

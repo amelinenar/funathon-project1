@@ -13,6 +13,11 @@ In the first part of this project, we prepared the data to train the model. We r
 
 An Insee working document on ensemble methods is available [here](https://inseefrlab-github-io.translate.goog/DT_methodes_ensemblistes/chapters/chapter2/3-random_forest.html?_x_tr_sl=fr&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp). If you are unfamiliar with random forests, we recommend reading this document before processing.
 
+You can start from the script `main.py` stored in the folder `starting_point/`. 
+
+If you want, you can also directly use the complete script of this step. 
+It is stored in `intermediate_solutions/3_RF.py`.
+
 # Concepts of Random Forests
 
 **Random Forests** extend [bagging](https://inseefrlab-github-io.translate.goog/DT_methodes_ensemblistes/chapters/chapter2/2-bagging.html?_x_tr_sl=fr&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp) by introducing an additional level of randomness: at each node, the splitting rule is determined using only a **randomly selected subset of features**. This further **reduces correlation between trees**, thereby **lowering the variance of the aggregated model's predictions**.
@@ -448,7 +453,7 @@ oob_error_ntrees
 
 ## Tuning all others hyperparameters with cross validation
 
-**Cross-validation** is a key step in model training : it is a technique used to evaluate the model's ability to generalize to unseendata, by splitting the dataset into multiple folds (typically 5) and iteratively using each fold as a validation set while the remaining folds are used for training. It also allows you to compare different set of hyperparameters and select the configuration that yields the best predictive performance.
+**Cross-validation** is a key step in model training : it is a technique used to evaluate the model's ability to generalize to unseen data, by splitting the dataset into multiple folds (typically 5) and iteratively using each fold as a validation set while the remaining folds are used for training. It also allows you to compare different set of hyperparameters and select the configuration that yields the best predictive performance.
 
 Note that in the Preprocessing section, you saw how to build a Pipeline. In this exercise, we will use a Pipeline again. The first exercise didn't use it to let you practice scikit-learn tools documented [here](https://scikit-learn.org/stable/modules/compose.html#pipelines-and-composite-estimators).
 
@@ -472,6 +477,7 @@ y_test  = pd.read_parquet("https://minio.lab.sspcloud.fr/projet-funathon/2026/pr
 #| echo: false
 #| output: false
 
+# To speed up computation time to render the site
 X_train = X_train.sample(frac=0.1, random_state=RANDOM_STATE)
 y_train = y_train[X_train.index]
 
@@ -506,6 +512,21 @@ param_grid = {
 
 2.  Using the [Grid Search documentation](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html), **set up and run cross-validated hyperparameter tuning for the RF model**. Note that training the model should last around 10 minutes. You can sample the dataset if you want to have a faster training. 
 
+::: {.callout-tip title="Filter error messages"}
+
+When doing your gridsearch, you may have many error messages about `sklearn.utils.parallel.delayed` that should be used with `sklearn.utils.parallel.Parallel`.
+This error does not matter here. 
+To filter this error, just add the following lines of code before running your gridsearch : 
+
+
+```{python}
+import warnings
+warnings.filterwarnings("ignore", message=".*sklearn.utils.parallel.delayed.*")
+```
+
+:::
+
+
 ```{python}
 #| code-fold: true
 #| code-summary: See the solution
@@ -527,6 +548,8 @@ grid_search = GridSearchCV(
 # Train
 grid_search.fit(X_train, y_train)
 ```
+
+
 
 3.  From the fitted `grid_search` object, **retrieve the best hyperparameters found for the model.**
 
